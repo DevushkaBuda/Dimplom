@@ -1,60 +1,71 @@
-# Дипломный проект профессии «Тестировщик»
-В рамках дипломного проекта требовалось автоматизировать тестирование комплексного сервиса покупки тура, взаимодействующего с СУБД и API Банка.
+# Дипломный проект профессии «Тестировщик ПО»
 
-База данных хранит информацию о заказах, платежах, статусах карт, способах оплаты.
+## Документация
 
-Для покупки тура есть два способа: с помощью карты и в кредит. В приложении используются два отдельных сервиса оплаты: Payment Gate и Credit Gate.
+#### [План автоматизации тестирования](../main/docs/Plan.md)
+#### [Отчёт о проведённом тестировании](../main/docs/Report.md)
+#### [Отчёт о проведённой автоматизации](../main/docs/Summary.md)
 
-[Ссылка на Дипломное задание](https://github.com/netology-code/qa-diploma).
+## Инструкция по запуску SUT и авто-тестов
 
-## Тестовая документация
-1. [План тестирования](https://github.com/Volgogradec/QA-Diplom/blob/main/documents/Plan.md);
-1. [Отчёт по итогам тестирования](https://github.com/Volgogradec/QA-Diplom/blob/main/documents/Report.md);
-1. [Отчет по итогам автоматизации](https://github.com/Volgogradec/QA-Diplom/blob/main/documents/Summary.md)
+### Предусловия
 
-## Запуск приложения
-### Подготовительный этап
-1. Установить и запустить IntelliJ IDEA;
-1. Установать и запустить Docker Desktop;
-1. Скопировать репозиторий с Github [по ссылке](https://github.com/Volgogradec/QA-Diplom.git).
-1. Открыть проект в IntelliJ IDEA.
+1. Для запуска проекта и тестов на локальной машине потребуются установленные 
+Git, JDK 11, IntelliJ IDEA, Docker, Docker Compose.
+3. Запустить Docker Desktop.
+2. Склонировать репозиторий на локальную машину командой в Git:
 
-### Запуск тестового приложения
-1. Запустить MySQL, PostgreSQL, NodeJS через терминал командой:
-   ```
-   docker-compose up
-   ```
-1. В новой вкладке терминала запустить тестируемое приложение:
-   * Для MySQL: 
-   ```
-   java -Dspring.datasource.url=jdbc:mysql://localhost:3306/app -jar artifacts/aqa-shop.jar
-   ```
-   * Для PostgreSQL: 
-   ```
-   java -Dspring.datasource.url=jdbc:postgresql://localhost:5432/app -jar artifacts/aqa-shop.jar
-   ```
-   .
-1. Убедиться в готовности системы. Приложение должно быть доступно по адресу:
-```
-http://localhost:8080/
-```
+   `git clone https://github.com/BrainLucker/qa-diploma.git`
 
-### Запуск тестов
-В новой вкладке терминала запустить тесты:
-1. Для MySQL: 
-   ```
-   gradlew clean test -Ddb.url=jdbc:mysql://localhost:3306/app
-   ```
-1. Для PostgreSQL: 
-   ```
-   gradlew clean test -Ddb.url=jdbc:postgresql://localhost:5432/app
-   ```
+4. Запустить IntelliJ IDEA и открыть проект.
 
-### Перезапуск тестов и приложения
-Для остановки приложения в окне терминала нужно ввести команду `Ctrl+С` и повторить необходимые действия из предыдущих разделов.
+### 1. Запуск контейнеров
 
-## Формирование отчёта о тестировании
-Предусмотрено формирование отчётности через Allure. Для этого в новой вкладке терминала вводим команду 
-```
-gradlew allureServe
-```"# Dimplom"  
+Для старта контейнеров с БД (MySQL, PostgreSQL) и симулятором банковских сервисов
+выполнить в терминале из корня проекта команду: `docker-compose up`.
+Дождаться пока поднимутся БД (вывод логов запуска прекратится).
+
+### 2. Запуск SUT
+
+В новой вкладке терминала из корня проекта выполнить одну из команд:
+
+* С подключением к MySQL:
+
+  `java -jar artifacts\aqa-shop.jar --spring.datasource.url=jdbc:mysql://localhost:3306/app`
+
+* С подключением к PostgreSQL:
+
+  `java -jar artifacts\aqa-shop.jar --spring.datasource.url=jdbc:postgresql://localhost:5432/app`
+
+### 3. Запуск авто-тестов
+
+#### Все тестовые классы
+
+В консоли «Run Anything» (двойное нажатие Ctrl) выполнить одну из команд в зависимости от выбранной БД в п. 2.
+
+* С подключением к MySQL:
+
+  `./gradlew clean test -Ddb.url=jdbc:mysql://localhost:3306/app`
+
+* С подключением к PostgreSQL:
+
+  `./gradlew clean test -Ddb.url=jdbc:postgresql://localhost:5432/app`
+
+#### Отдельный тестовый класс
+
+Запустить необходимый тестовый класс отдельно можно командой в консоли, указав его имя, например:
+
+`./gradlew clean test --tests BuyTourCreditPageTest` ...
+
+Либо запустить его с помощью кнопки «Run» в IDEA.
+
+#### Установка БД по-умолчанию
+
+При желании можно выставить предпочтительную БД по-умолчанию для выполнения тестов. Для этого нужно раскомментировать соответствующую строку
+в файле [build.gradle](../main/build.gradle).
+
+### 4. Формирование отчета AllureReport
+
+В консоли «Run Anything» (двойное нажатие Ctrl) выполнить команду: `./gradlew allureServe`.
+Отчет сгенерируется на основе результатов последнего прогона тестов и автоматически откроется в браузере.
+По окончании работы с отчетом необходимо завершить выполнение процесса allureServe, нажав Ctrl + F2 во вкладке «Run» терминала.
